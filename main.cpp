@@ -13,7 +13,7 @@
 using namespace std;
 char vir_mem[4 * 1024 * 1024];
 
-int main(int argc , char **argv) {
+int main() {
 	memset(&vir_mem[0], 0, 4 * 1024 * 1024);
 	int static_seg = 0;
 	int heap_seg = 0;
@@ -22,10 +22,10 @@ int main(int argc , char **argv) {
 	map<string, int> database;
 	vector<line_keeper> linebase;
 	int mainpos;
-	int reg[34];
-	memset(reg, 0, 34*sizeof(int));
+	int reg[35];
+	memset(reg, 0, 35*sizeof(int));
 	reg[29] = 4 * 1024 * 1024 - 1;
-	parser p(argv[1]);
+	parser p("array_test1-mahaojun.s");
 	int x = 1;
 	while (p.pre_deal(&database, &funcbase, &linebase,
 		reg, mainpos, vir_mem, static_seg, heap_seg, stack_seg, x)) {
@@ -39,6 +39,8 @@ int main(int argc , char **argv) {
 	e.execute(&database, &funcbase, &linebase,
 		reg, mainpos, vir_mem, static_seg, heap_seg, stack_seg);*/
 	pipeline pipe;
-	while (pipe.execute(reg, &database, &funcbase, &linebase, vir_mem, static_seg, heap_seg, stack_seg)){}
+	while (true) {
+		pipe.execute(reg, &database, &funcbase, &linebase, vir_mem, static_seg, heap_seg, stack_seg);
+	}
 	return 0;
 }

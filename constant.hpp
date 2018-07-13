@@ -15,7 +15,7 @@ enum func {
 	li, seq, sge, sgt, sle, slt, sne,
 	b, beq, bne, bge, ble, bgt, blt, beqz, bnez, blez, bgez, bgtz, bltz,
 	j, jr, jal, jalr, la, lb, lh, lw,
-	sb, sh, sw, mov, mfhi, mflo, nop, syscall, label, mainp
+	sb, sh, sw, mov, mfhi, mflo, nop, syscall, label, mainp, null_func
 };
 
 #endif

@@ -13,5 +13,10 @@ using namespace std;
 class IF_to_ID_passer {
 public:
 	int cur_line = 0;
-	bool line_is_over = false;
+	bool line_is_started = false;
+
+	void clean() {
+		cur_line = 0;
+		line_is_started = false;
+	}
 };
