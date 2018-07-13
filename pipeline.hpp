@@ -583,14 +583,14 @@ public:
 				return;
 			}
 			if (p3.arg2_reg == 10) {
-				system("PAUSE");
+				//system("PAUSE");
 				p4.syscall_type = 10;
 				exit(0);
 				p4.next_line = p4.cur_line + 1;
 				return;
 			}
 			if (p3.arg2_reg == 17) {
-				system("PAUSE");
+				//system("PAUSE");
 				p4.syscall_type = 17;
 				exit(p4.arg1_reg);
 				p4.next_line = p4.cur_line + 1;
