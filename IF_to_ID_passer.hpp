@@ -14,11 +14,4 @@ class IF_to_ID_passer {
 public:
 	int cur_line = 0;
 	bool line_is_over = false;
-	
-	IF_to_ID_passer(){}
-
-	void clean() {
-		cur_line = 0;
-		line_is_over = false;
-	}
 };

@@ -32,7 +32,10 @@ public:
 
 	void Decode(vector<line_keeper>* linebase, int* reg) {
 		line_keeper line = linebase->operator[](p1.cur_line);
-		cout << line.true_num << endl;
+		//cout << line.true_num << endl;
+		if (line.true_num == 680) {
+			int nfvn = 0;
+		}
 		p2.command = line.command;
 		p2.cur_line = p1.cur_line;
 		p2.arg_num = line.arg_num;
@@ -40,21 +43,21 @@ public:
 			line.command == xoor || line.command == xoru || line.command == rem || line.command == remu ||
 			line.command == seq || line.command == sge || line.command == sgt || line.command == sle ||
 			line.command == slt || line.command == sne) {
-			p2.reg_to_change_num = line.Rdest;
+			p2.changed_reg_num = line.Rdest;
 			p2.arg1_reg = reg[line.Rsrc1];
 			if (line.Src2_type) p2.arg2_reg = line.Src2_dig;
 			else p2.arg2_reg = reg[line.Src2_reg];
 			return;
 		}
 		if (line.command == addiu) {
-			p2.reg_to_change_num = line.Rdest;
+			p2.changed_reg_num = line.Rdest;
 			p2.arg1_reg = reg[line.Rsrc1];
 			p2.arg2_reg = line.Imm;
 			return;
 		}
 		if (line.command == mul || line.command == mulu) {
 			if (line.arg_num == 3) {
-				p2.reg_to_change_num = line.Rdest;
+				p2.changed_reg_num = line.Rdest;
 				p2.arg1_reg = reg[line.Rsrc1];
 				if (line.Src2_type) p2.arg2_reg = line.Src2_dig;
 				else p2.arg2_reg = reg[line.Src2_reg];
@@ -69,26 +72,25 @@ public:
 		}
 		if (line.command == divv || line.command == divu) {
 			if (line.arg_num == 3) {
-				p2.reg_to_change_num = line.Rdest;
+				p2.changed_reg_num = line.Rdest;
 				p2.arg1_reg = reg[line.Rsrc1];
 				if (line.Src2_type) p2.arg2_reg = line.Src2_dig;
 				else p2.arg2_reg = reg[line.Src2_reg];
 				return;
 			}
 			else {
-				p2.arg1_reg = reg[line.Rdest];
-				if (line.Src2_type) p2.arg2_reg = line.Src2_dig;
-				else p2.arg2_reg = reg[line.Src2_reg];
+				p2.arg1_reg = reg[line.Rsrc1];
+				p2.arg2_reg = reg[line.Rsrc2];
 				return;
 			}
 		}
 		if (line.command == neg || line.command == negu || line.command == mov) {
-			p2.reg_to_change_num = line.Rdest;
+			p2.changed_reg_num = line.Rdest;
 			p2.arg1_reg = reg[line.Rsrc];
 			return;
 		}
 		if (line.command == li) {
-			p2.reg_to_change_num = line.Rdest;
+			p2.changed_reg_num = line.Rdest;
 			p2.arg1_reg = line.Imm;
 			return;
 		}
@@ -116,8 +118,8 @@ public:
 		}
 		if (line.command == la || line.command == lb ||
 			line.command == lh || line.command == lw) {
-			p2.reg_to_change_num = line.Rdest;
-			p3.ad_type = line.ad_type;
+			p2.changed_reg_num = line.Rdest;
+			p2.ad_type = line.ad_type;
 			if (line.ad_type) {
 				p2.label_name = line.label_name;
 				return;
@@ -129,7 +131,7 @@ public:
 		}
 		if (line.command == sb || line.command == sh || line.command == sw) {
 			p2.arg1_reg = reg[line.Rsrc];
-			p3.ad_type = line.ad_type;
+			p2.ad_type = line.ad_type;
 			if (line.ad_type) {
 				p2.label_name = line.label_name;
 				return;
@@ -140,7 +142,7 @@ public:
 			}
 		}
 		if (line.command == mfhi || line.command == mflo) {
-			p2.reg_to_change_num = line.Rdest;
+			p2.changed_reg_num = line.Rdest;
 			return;
 		}
 		if (line.command == nop) {
@@ -161,35 +163,35 @@ public:
 		p3.arg2_reg = p2.arg2_reg;
 		p3.arg3_reg = p2.arg3_reg;
 		p3.label_name = p2.label_name;
-		p3.changed_reg_num = p2.reg_to_change_num;
+		p3.changed_reg_num = p2.changed_reg_num;
 		p3.ad_type = p2.ad_type;
 		if (p3.command == add) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = p2.arg1_reg + p2.arg2_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == addu || p3.command == addiu) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (unsigned int)p2.arg1_reg + (unsigned int)p2.arg2_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == sub) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = p2.arg1_reg - p2.arg2_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == subu) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (unsigned int)p2.arg1_reg - (unsigned int)p2.arg2_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == mul) {
 			if (p3.arg_num == 3) {
-				p3.changed_reg_num = p2.reg_to_change_num;
+				p3.changed_reg_num = p2.changed_reg_num;
 				p3.changed_reg = p2.arg1_reg * p2.arg2_reg;
 				p3.next_line = p3.cur_line + 1;
 				return;
@@ -203,7 +205,7 @@ public:
 		}
 		if (p3.command == mulu) {
 			if (p3.arg_num == 3) {
-				p3.changed_reg_num = p2.reg_to_change_num;
+				p3.changed_reg_num = p2.changed_reg_num;
 				p3.changed_reg = (unsigned int)p2.arg1_reg * (unsigned int)p2.arg2_reg;
 				p3.next_line = p3.cur_line + 1;
 				return;
@@ -217,7 +219,7 @@ public:
 		}
 		if (p3.command == divv) {
 			if (p3.arg_num == 3) {
-				p3.changed_reg_num = p2.reg_to_change_num;
+				p3.changed_reg_num = p2.changed_reg_num;
 				p3.changed_reg = p2.arg1_reg / p2.arg2_reg;
 				p3.next_line = p3.cur_line + 1;
 				return;
@@ -231,7 +233,7 @@ public:
 		}
 		if (p3.command == divu) {
 			if (p3.arg_num == 3) {
-				p3.changed_reg_num = p2.reg_to_change_num;
+				p3.changed_reg_num = p2.changed_reg_num;
 				p3.changed_reg = (unsigned int)p2.arg1_reg / (unsigned int)p2.arg2_reg;
 				p3.next_line = p3.cur_line + 1;
 				return;
@@ -244,79 +246,79 @@ public:
 			}
 		}
 		if (p3.command == xoor) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = p2.arg1_reg ^ p2.arg2_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == xoru) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (unsigned int)p2.arg1_reg ^ (unsigned int)p2.arg2_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == neg) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = -p2.arg1_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == negu) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = ~(unsigned int)p2.arg1_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == rem) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = p2.arg1_reg % p2.arg2_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == remu) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (unsigned int)p2.arg1_reg % (unsigned int)p2.arg2_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == li) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = p2.arg1_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == seq) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (p2.arg1_reg == p2.arg2_reg);
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == sge) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (p2.arg1_reg >= p2.arg2_reg);
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == sgt) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (p2.arg1_reg > p2.arg2_reg);
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == sle) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (p2.arg1_reg <= p2.arg2_reg);
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == slt) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (p2.arg1_reg < p2.arg2_reg);
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == sne) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = (p2.arg1_reg != p2.arg2_reg);
 			p3.next_line = p3.cur_line + 1;
 			return;
@@ -404,19 +406,19 @@ public:
 			return;
 		}
 		if (p3.command == mov) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = p2.arg1_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == mfhi) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = p2.arg1_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
 		}
 		if (p3.command == mflo) {
-			p3.changed_reg_num = p2.reg_to_change_num;
+			p3.changed_reg_num = p2.changed_reg_num;
 			p3.changed_reg = p2.arg1_reg;
 			p3.next_line = p3.cur_line + 1;
 			return;
@@ -432,6 +434,7 @@ public:
 		p4.reg31 = p3.reg31;
 		p4.reg32 = p3.reg32;
 		p4.reg33 = p3.reg33;
+		p4.arg_num = p3.arg_num;
 		if (p4.command == la) {
 			p4.changed_reg_num = p3.changed_reg_num;
 			p4.changed_reg = database->operator[](p3.label_name);
@@ -442,6 +445,7 @@ public:
 			if (p3.ad_type) {
 				int pos = database->operator[](p3.label_name);
 				p4.changed_reg_num = p3.changed_reg_num;
+				p4.changed_reg = 0;
 				memcpy(&p4.changed_reg, &vir_mem[pos], 1);
 				p4.next_line = p4.cur_line + 1;
 				return;
@@ -449,6 +453,7 @@ public:
 			else {
 				int pos = p3.arg1_reg;
 				p4.changed_reg_num = p3.changed_reg_num;
+				p4.changed_reg = 0;
 				memcpy(&p4.changed_reg, &vir_mem[pos], 1);
 				p4.next_line = p4.cur_line + 1;
 				return;
@@ -458,6 +463,7 @@ public:
 			if (p3.ad_type) {
 				int pos = database->operator[](p3.label_name);
 				p4.changed_reg_num = p3.changed_reg_num;
+				p4.changed_reg = 0;
 				memcpy(&p4.changed_reg, &vir_mem[pos], 2);
 				p4.next_line = p4.cur_line + 1;
 				return;
@@ -465,6 +471,7 @@ public:
 			else {
 				int pos = p3.arg1_reg;
 				p4.changed_reg_num = p3.changed_reg_num;
+				p4.changed_reg = 0;
 				memcpy(&p4.changed_reg, &vir_mem[pos], 2);
 				p4.next_line = p4.cur_line + 1;
 				return;
@@ -530,11 +537,13 @@ public:
 		}
 		if (p4.command == syscall) {
 			if (p3.arg2_reg == 1) {
+				p4.syscall_type = 1;
 				cout << p3.arg1_reg;
 				p4.next_line = p4.cur_line + 1;
 				return;
 			}
 			if (p3.arg2_reg == 4) {
+				p4.syscall_type = 4;
 				int a = p3.arg1_reg;
 				for (int i = a;; ++i) {
 					if (vir_mem[i] == '\0') break;
@@ -544,12 +553,14 @@ public:
 				return;
 			}
 			if (p3.arg2_reg == 5) {
+				p4.syscall_type = 5;
 				cin >> p4.changed_reg;
 				p4.changed_reg_num = 2;
 				p4.next_line = p4.cur_line + 1;
 				return;
 			}
 			if (p3.arg2_reg == 8) {
+				p4.syscall_type = 8;
 				string str;
 				cin >> str;
 				int x;
@@ -562,19 +573,25 @@ public:
 				return;
 			}
 			if (p3.arg2_reg == 9) {
+				p4.syscall_type = 9;
 				int x = p3.arg1_reg;
-				p3.arg2_reg = heap_seg;
+				p4.changed_reg = heap_seg;
+				p4.changed_reg_num = 2;
 				heap_seg += x;
 				while (heap_seg % 4 != 0) heap_seg += 1;
 				p4.next_line = p4.cur_line + 1;
 				return;
 			}
 			if (p3.arg2_reg == 10) {
+				system("PAUSE");
+				p4.syscall_type = 10;
 				exit(0);
 				p4.next_line = p4.cur_line + 1;
 				return;
 			}
 			if (p3.arg2_reg == 17) {
+				system("PAUSE");
+				p4.syscall_type = 17;
 				exit(p4.arg1_reg);
 				p4.next_line = p4.cur_line + 1;
 				return;
@@ -585,11 +602,19 @@ public:
 	void Write_back(int * reg) {
 		reg[34] = p4.next_line;
 		if (p4.command == add || p4.command == addu || p4.command == addiu || p4.command == sub || p4.command == subu ||
-			p4.command == mul || p4.command == mulu || p4.command == divv || p4.command == divu || p4.command == xoor ||
-			p4.command == xoru || p4.command == neg || p4.command == negu || p4.command == rem || p4.command == remu ||
+			p4.command == xoor || p4.command == xoru || p4.command == neg || p4.command == negu || p4.command == rem || p4.command == remu ||
 			p4.command == li || p4.command == seq || p4.command == sge || p4.command == sgt || p4.command == sle ||
-			p4.command == slt || p4.command == sne) {
+			p4.command == slt || p4.command == sne || p4.command == mov) {
 			reg[p4.changed_reg_num] = p4.changed_reg;
+		}
+		if (p4.command == mul || p4.command == mulu || p4.command == divv || p4.command == divu) {
+			if (p4.arg_num == 3) {
+				reg[p4.changed_reg_num] = p4.changed_reg;
+			}
+			else {
+				reg[32] = p4.reg32;
+				reg[33] = p4.reg33;
+			}
 		}
 		if (p4.command == b || p4.command == beq || p4.command == bne || p4.command == bge || p4.command == ble || p4.command == bgt ||
 			p4.command == blt || p4.command == beqz || p4.command == bnez || p4.command == blez || p4.command == bgez || p4.command == bgtz ||
@@ -605,18 +630,44 @@ public:
 		if (p4.command == sw || p4.command == sh || p4.command == sb) {
 			return;
 		}
+		if (p4.command == mflo) {
+			reg[p4.changed_reg_num] = reg[33];
+			return;
+		}
+		if (p4.command == mfhi) {
+			reg[p4.changed_reg_num] = reg[32];
+			return;
+		}
+		if (p4.command == syscall) {
+			if (p4.syscall_type == 1) {
+				return;
+			}
+			if (p4.syscall_type == 4) {
+				return;
+			}
+			if (p4.syscall_type == 5) {
+				reg[p4.changed_reg_num] = p4.changed_reg;
+				return;
+			}
+			if (p4.syscall_type == 8) {
+				return;
+			}
+			if (p4.syscall_type == 9) {
+				reg[p4.changed_reg_num] = p4.changed_reg;
+				return;
+			}
+			if (p4.syscall_type == 10 || p4.syscall_type == 17) {
+				return;
+			}
+		}
 	}
 
 	bool execute(int* reg , map<string, int>* database, map<string, int>* funcbase, vector<line_keeper>* linebase, char* vir_mem, int& heap_seg, int& static_seg, int& stack_seg) {
 		if (Instruction_fetch(reg, linebase)) {
 			Decode(linebase, reg);
-			p1.clean();
 			Execution(database, funcbase);
-			p2.clean();
 			Memery_access(database, funcbase, vir_mem, heap_seg, static_seg, stack_seg);
-			p3.clean();
 			Write_back(reg);
-			p4.clean();
 			return true;
 		}
 		else return false;

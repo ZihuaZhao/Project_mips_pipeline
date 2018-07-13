@@ -13,7 +13,7 @@
 using namespace std;
 char vir_mem[4 * 1024 * 1024];
 
-int main() {
+int main(int argc , char **argv) {
 	memset(&vir_mem[0], 0, 4 * 1024 * 1024);
 	int static_seg = 0;
 	int heap_seg = 0;
@@ -25,7 +25,7 @@ int main() {
 	int reg[34];
 	memset(reg, 0, 34*sizeof(int));
 	reg[29] = 4 * 1024 * 1024 - 1;
-	parser p("array_test1-mahaojun.s");
+	parser p(argv[1]);
 	int x = 1;
 	while (p.pre_deal(&database, &funcbase, &linebase,
 		reg, mainpos, vir_mem, static_seg, heap_seg, stack_seg, x)) {
